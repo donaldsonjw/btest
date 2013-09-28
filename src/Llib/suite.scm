@@ -25,7 +25,9 @@
 	 subsuites)
       (generic suite-add-test! suite::suite test::test)
       (generic suite-add-subsuite! suite::suite subsuite::suite)
-      (generic suite-run suite::suite)))
+      (generic suite-run suite::suite
+	 test-result-handler::procedure
+	 suite-result-handler::procedure)))
 
 
 ;;;; suite protocol
@@ -39,10 +41,24 @@
    (set! (-> suite subsuites) (cons subsuite (-> suite subsuites))))
 
 
-(define-generic (suite-run suite::suite)
-   (let ((test-results (map (lambda (t) (test-run t)) (-> suite tests)))
-	 (suite-results (map (lambda (s) (suite-run s)) (-> suite subsuites))))
-      (instantiate::suite-result (suite suite)
-				 (test-results test-results)
-				 (subsuite-results suite-results)))) 
+(define-generic (suite-run suite::suite
+		   test-result-handler::procedure
+		   suite-result-handler::procedure)
+   (let ((test-results (map (lambda (t)
+			       (let ((res (test-run t)))
+				     (test-result-handler res)
+				     res))
+			  (reverse (-> suite tests))))
+	 (suite-results (map (lambda (s)
+				(let ((res (suite-run s
+					      test-result-handler
+					      suite-result-handler)))
+				   (suite-result-handler res)
+				   res))
+				(reverse (-> suite subsuites)))))
+      (let ((res (instantiate::suite-result (suite suite)
+					    (test-results test-results)
+					    (subsuite-results suite-results))))
+	 (suite-result-handler res)
+	 res)))
 

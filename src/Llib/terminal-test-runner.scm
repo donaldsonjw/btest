@@ -28,50 +28,56 @@
 
 ;;;; terminal-test-runner implementation of test-runner protocol
 
-(define (display-test-results results #!optional (show-success? #f))
-   (define (successful-count r)
-      (let loop ((lst r)
+(define (display-test-result result #!optional (show-success? #f))
+  (let ((r::test-result result))
+     (cond ((test-result-success? r)
+	    (when show-success?
+	       (print (test-description (-> r test)) "... ok.")))
+	   (else
+	    (display* (test-description (-> r test)) "...")
+	    (print "error.")
+	    (print " ==> provided: [" (-> r result)
+	       "]\n     expected: [" (test-result-expected r)
+	       "]"
+	       (if (not (eq? (-> r exception)
+			   #unspecified))
+		   (format "~%     threw: [~a]~%"
+		      (with-error-to-string
+			 (lambda ()
+			    (error-notify (-> r exception)))))
+		   "\n"))))))
+
+  
+   ;    results)
+   ; (let* ((succ-count (successful-count results))
+   ; 	 (count (length results))
+   ; 	 (fail-count (- count succ-count)))
+   ;    (printf "~%Tests: ~a Succeeded: ~a Failed: ~a~%" count succ-count
+   ; 	 fail-count)))
+     
+   
+(define (display-suite-result result #!optional (show-success? #f))
+   (define (successful-count results)
+      (let loop ((lst results)
 		 (c 0))
 	 (if (pair? lst)
 	     (loop (cdr lst)
 		(if (test-result-success? (car lst))
 		    (+ c 1)
 		    c))
-	     c)))		 
-   (for-each (lambda (r::test-result)
-		(cond ((test-result-success? r)
-		       (when show-success?
-			  (print (test-description (-> r test)) "... ok.")))
-		      (else
-		       (display* (test-description (-> r test)) "...")
-		       (print "error.")
-		       (print " ==> provided: [" (-> r result)
-			      "]\n     expected: [" (test-result-expected r)
-			      "]"
-			      (if (not (eq? (-> r exception)
-					  #unspecified))
-				  (format "~%     threw: [~a]~%"
-				     (with-error-to-string
-					(lambda ()
-					   (error-notify (-> r exception)))))
-				  "\n")))))
-      results)
-   (let* ((succ-count (successful-count results))
-	 (count (length results))
-	 (fail-count (- count succ-count)))
-      (printf "~%Tests: ~a Succeeded: ~a Failed: ~a~%" count succ-count
-	 fail-count)))
-     
-   
-(define (display-suite-results results #!optional (show-success? #f))
-   (for-each (lambda (s::suite-result)
-		(print (-> s suite description) "\n")
-		(display-test-results (-> s test-results) show-success?)
-		(display-suite-results (-> s subsuite-results) show-success?))
-      results))
+	     c)))
+   (let ((s::suite-result result))
+      (let* ((succ-count (successful-count (-> s test-results)))
+	     (count (length (-> s test-results)))
+	     (fail-count (- count succ-count)))
+	 (printf "~%~a~% Tests: ~a Succeeded: ~a Failed: ~a~%"
+	    (-> s suite description) count succ-count fail-count))))
 
 (define-method (test-runner-execute tr::terminal-test-runner
 		  show-success?::bool)
-   (let* ((res::suite-result (suite-run (-> tr suite))))
-      (display-suite-results (list res) show-success?)))
+   (suite-run (-> tr suite)
+      (lambda (tr) (display-test-result tr show-success?))
+      (lambda (sr) (display-suite-result sr show-success?))))
       
+
+

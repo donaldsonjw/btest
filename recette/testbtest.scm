@@ -31,6 +31,6 @@
    3)
 
 
-(let ((tr (instantiate::terminal-test-runner (suite (test-root-suite)))))
+(let ((tr (instantiate::terminal-test-runner)))
    (test-runner-execute tr #t))
 

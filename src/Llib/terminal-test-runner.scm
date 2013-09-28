@@ -20,10 +20,11 @@
 	   btest-suite
            btest-test-result
 	   btest-suite-result
-	   btest-test-runner)
+	   btest-test-runner
+	   btest-btest)
    (export
       (class terminal-test-runner::test-runner
-	 suite)))
+	 (suite (default (test-root-suite))))))
 
 
 ;;;; terminal-test-runner implementation of test-runner protocol

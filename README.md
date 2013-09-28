@@ -27,6 +27,6 @@ Tests are run with a test runner. The only available test runner at this time is
 	(test-runner-execute tr #t))`
 
 
-The second argument to `test-runner-execute` is a flag to indicate whether the results of successful tests is shown.
+The second argument to `test-runner-execute` is a flag to indicate whether the results of successful tests are shown.
 
 

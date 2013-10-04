@@ -31,6 +31,21 @@
    3)
 
 
-(let ((tr (instantiate::terminal-test-runner)))
+(define-test-suite my-suite
+   (let ((lst1 '(1 2 3)))
+
+      (test "throws error exception"
+	 (assert-exception-thrown  (raise 5);(error "a" "b" "c")
+	    &error))
+      
+      (test "car of (1 2 3) = 1"
+	 (assert= (car lst1) 1))
+      
+      (test "car of (1 2 3) != 2"
+	 (assert-false (= (car lst1) 2)))
+      ))
+
+
+(let ((tr (instantiate::terminal-test-runner (suite my-suite))))
    (test-runner-execute tr #t))
 

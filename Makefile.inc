@@ -132,6 +132,10 @@ $(OBJDIR):
 $(DISTDIR):
 	mkdir $@
 
+check-syntax: .afile
+	$(BIGLOO) -afile .afile -syntax-check ${CHK_SOURCES}
+
+
 
 install: all
 	for file in $(DISTDIR)/*; do \

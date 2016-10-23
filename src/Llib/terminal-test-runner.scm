@@ -31,22 +31,24 @@
 
 (define (display-test-result result #!optional (show-success? #f))
   (let ((r::test-result result))
-     (cond ((test-result-success? r)
-	    (when show-success?
-	       (print (test-description (-> r test)) "... ok.")))
-	   (else
-	    (display* (test-description (-> r test)) "...")
-	    (print "error.")
-	    (print " ==> provided: [" (-> r result)
-	       "]\n     expected: [" (test-result-expected r)
-	       "]"
-	       (if (not (eq? (-> r exception)
-			   #unspecified))
-		   (format "~%     threw: [~a]~%"
-		      (with-error-to-string
-			 (lambda ()
-			    (error-notify (-> r exception)))))
-		   "\n"))))))
+     (if (test-result-success? r)
+         (when show-success?
+            (print (test-description (-> r test)) "... ok."))
+         (let ((failure::test-failure r))
+            (display* (test-description (-> r test)) "...")
+            (print "error.")
+            (print " ==> " (-> failure reason))) 
+               ;    (print " ==> provided: [" (-> r result)
+	       ; "]\n     expected: [" (test-result-expected r)
+	       ; "]"
+	       ; (if (not (eq? (-> r exception)
+	       ;  	   #unspecified))
+	       ;     (format "~%     threw: [~a]~%"
+	       ;        (with-error-to-string
+	       ;  	 (lambda ()
+	       ;  	    (error-notify (-> r exception)))))
+	       ;     "\n"
+         )))
 
   
    ;    results)
@@ -73,6 +75,7 @@
 	     (fail-count (- count succ-count)))
 	 (printf "~%~a~% Tests: ~a Succeeded: ~a Failed: ~a~%"
 	    (-> s suite description) count succ-count fail-count))))
+
 
 (define-method (test-runner-execute tr::terminal-test-runner
 		  show-success?::bool)

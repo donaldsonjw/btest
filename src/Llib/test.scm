@@ -20,7 +20,6 @@
       (abstract-class test)
       (generic test-execute test::test)
       (generic test-run test::test)
-      (generic test-expected test::test)
       (generic test-description test::test)))
 
 ;;;; test protocol
@@ -30,9 +29,6 @@
 
 ;; run the test returning an instance of test result
 (define-generic (test-run test::test))
-
-;; return the expected value of test
-(define-generic (test-expected test::test))
 
 ;; return the test description
 (define-generic (test-description test::test))

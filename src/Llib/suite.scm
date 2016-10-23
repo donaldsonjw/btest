@@ -53,7 +53,7 @@
 				(let ((res (suite-run s
 					      test-result-handler
 					      suite-result-handler)))
-				   (suite-result-handler res)
+				   #;(suite-result-handler res)
 				   res))
 				(reverse (-> suite subsuites)))))
       (let ((res (instantiate::suite-result (suite suite)

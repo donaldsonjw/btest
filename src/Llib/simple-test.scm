@@ -19,15 +19,18 @@
    (import btest-test
 	   btest-test-result)
    (export
+      (class &assertion-failure::&exception
+         reason)
       (class simple-test::test
 	 description
-	 expression
-	 expected)))
+	 expression)
+      (raise-assertion-failure #!key reason)))
 
+
+(define (raise-assertion-failure #!key reason)
+   (raise (instantiate::&assertion-failure (reason reason))))
 
 ;;;; simple-test implementation of test protocol
-(define-method (test-expected test::simple-test)
-   (-> test expected))
 
 (define-method (test-execute test::simple-test)
    ((-> test expression)))
@@ -35,14 +38,16 @@
 
 (define-method (test-run test::simple-test)
    (with-handler (lambda (e)
-		    (instantiate::test-result
-		       (test test)
-		       (result #unspecified)
-		       (exception e)))
-		 (instantiate::test-result  (test test)
-					    (result (test-execute test))
-					    (exception #unspecified)
-					    )))
+                    (if (isa? e &assertion-failure)
+                        (let ((failure::&assertion-failure e))
+                           (instantiate::test-failure
+                              (test test)
+                              (reason (-> failure reason))))
+                        (instantiate::test-failure
+                           (test test)
+                           (reason (format "unexpected exception: ~a" e)))))
+                 (let ((res (test-execute test)))
+                    (instantiate::test-success (test test)))))
 
 (define-method (test-description test::simple-test)
    (-> test description))

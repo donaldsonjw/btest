@@ -21,21 +21,23 @@
       ((:result ?result)
        `(test-add! :test (instantiate::simple-test
 			    (description ',desc)
-			    (expression (lambda () ,prgm))
-			    (expected ,result))))
+			    (expression (lambda () (assert-equal? ,prgm ,result))))))
       (()
        `(test-add! :test (instantiate::simple-test
 			    (description ',desc)
-			    (expression (lambda () ,prgm))
-			    (expected #unspecified))))
+			    (expression (lambda () ,prgm)))))
       (else
        (error "define-test" "Illegal rest argument" rest))))
 
 
 
-(define-macro (assert-predicate predicate exp val)
-  `(cons (lambda() ,exp)  (lambda (v) (if (eq? v 'result) ,val 
-				   (,predicate v ,val)))))
+   (define-macro (assert-predicate predicate exp val)
+      `(let ((r ,exp)
+             (v ,val)
+             (pred ,predicate))
+          (if (pred r v)
+              #t
+              (raise-assertion-failure reason: (format "provided: [~a] expected: [~a]" r v)))))
 
 (define-macro (assert-eq? exp val)
   `(assert-predicate eq? ,exp ,val))
@@ -56,34 +58,37 @@
    `(assert-predicate eq? ,exp #f))
 
 (define-macro (assert-exception-thrown exp exception)
-   `(cons (lambda ()
-	     (with-handler (lambda (e)
-			      (if (isa? e ,exception)
-				  #t
-				  (raise e)))
-			   ,exp))
-       (lambda (v) (if (eq? v 'result)
-		       ,exception
-		       v))))
-
-(define-macro (test desc exps)
+   `(with-handler (lambda (e)
+                     (if (isa? e ,exception)
+                         #t
+                         (raise-assertion-failure reason: (format "threw unexpected exception: [~a]~%"
+                                                             (with-error-to-string (lambda ()
+                                                                                      (error-notify e)))))))
+                  (let ((res ,exp))
+                     (raise-assertion-failure reason: (format "failed to throw expected exception: [~a]" ,exception)))))
+          
+(define-macro (test desc . exps)
    `(test-add! :suite *current-test-suite* :test
-       (let ((tp ,exps))
-	  (instantiate::simple-test (description ,desc)
-			(expression (car tp))
-			(expected (cdr tp))))))
+       (instantiate::simple-test (description ,desc)
+                                 (expression (lambda () (begin ,@exps))))))
 
 (define-expander define-test-suite
    (lambda (x e)
       (match-case x
-	 ((?- ?id . ?exp)
-	     (e `(define ,id
-		    (let ((*current-test-suite*
-			     (instantiate::suite (description ',id)
-						 (tests '())
-						 (subsuites '()))))
-		       ,@(e exp e) *current-test-suite*)) e))
-	 (else
+         ((?- ?id)
+          (e `(define ,id
+                 (instantiate::suite (description ',id)
+                                     (tests '())
+                                     (subsuites '()))) e))
+         
+         ((?- ?id . ?exp)
+          (e `(define ,id
+                 (let ((*current-test-suite*
+                          (instantiate::suite (description ',id)
+                                              (tests '())
+                                              (subsuites '()))))
+                    ,@(e exp e) *current-test-suite*)) e))
+         (else
 	  (error "define-test-suite" "invalid form" x)))))
 
 

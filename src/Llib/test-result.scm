@@ -18,30 +18,32 @@
 (module btest-test-result
    (import btest-test)
    (export
-      (class test-result
-	 test::test
-	 exception
-	 result)
+      (abstract-class test-result
+         test::test)
+      (class test-success::test-result)
+      (class test-failure::test-result
+         reason)
+      
       (generic test-result-success? tr::test-result)
-      (generic test-result-failure? tr::test-result)
-      (generic test-result-expected tr::test-result)))
+      (generic test-result-failure? tr::test-result)))
 
 
 ;;;; test-result protocol and implementation
 
-(define-generic (test-result-success? tr::test-result)
-   (or (and (eq? (-> tr result) #unspecified)
-	    (eq? (-> tr exception) #unspecified))
-       (equal? (-> tr result) (test-expected (-> tr test)))
-       (and (procedure? (test-expected (-> tr test)))
-	    ((test-expected (-> tr test)) (-> tr result)))))
+(define-generic (test-result-success? tr::test-result))
 
-(define-generic (test-result-failure? tr::test-result)
-   (not (test-result-success? tr)))
+(define-method (test-result-success? tr::test-success)
+   #t)
 
-(define-generic (test-result-expected tr::test-result)
-   (if (procedure? (test-expected (-> tr test)))
-       ((test-expected (-> tr test)) 'result)
-       (test-expected (-> tr test))))
+(define-method (test-result-success? tr::test-failure)
+   #f)
+   
+(define-generic (test-result-failure? tr::test-result))
+
+(define-method (test-result-failure? tr::test-success)
+   #f)
+
+(define-method (test-result-failure? tr::test-failure)
+   #t)
 
 

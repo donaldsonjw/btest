@@ -17,12 +17,36 @@
 
 (module btest-suite-result
    (import btest-test
-	   btest-suite)
+	   btest-suite
+           btest-test-result)
    (export
       (class suite-result
 	 suite::suite
 	 test-results
-	 subsuite-results)))
+	 subsuite-results)
+      (successful-count s::suite-result)
+      (test-count s::suite-result)
+      (suite-result-successful? res::suite-result)))
+
+
+(define-inline (fold f s lst)
+   (if (pair? lst)
+       (fold f (f (car lst) s) (cdr lst))
+       s)) 
+
+(define (successful-count s::suite-result)
+   (let ((succ-count (fold (lambda (v s) (+ (if (test-result-success? v) 1 0) s))
+                        0 (-> s test-results))))
+      (+ succ-count
+         (fold + 0 (map successful-count (-> s subsuite-results))))))
+
+(define (test-count s::suite-result)
+   (let ((c (length (-> s test-results))))
+      (+ c (fold + 0 (map test-count (-> s subsuite-results))))))
+
+
+(define (suite-result-successful? res::suite-result)
+   (= (successful-count res) (test-count res)))
 
 
 

@@ -140,10 +140,7 @@ check-syntax: .afile
 install: all
 	for file in $(DISTDIR)/*; do \
 	  $(INSTALL) $$file $(INSTBIGLOOLIBDIR)/`basename $$file`; \
-	done; \
-	for file in $(DISTDIR)/*.so; do \
-	  $(LINK) -s $(INSTBIGLOOLIBDIR)/`basename $$file` $(INSTLIBDIR)/`basename $$file`; \
-	done
+	done;
 
 clean:
 	rm -f -r $(OBJDIR);\

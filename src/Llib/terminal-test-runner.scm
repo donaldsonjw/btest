@@ -38,50 +38,23 @@
             (display* (test-description (-> r test)) "...")
             (print "error.")
             (print " ==> " (-> failure reason))) 
-               ;    (print " ==> provided: [" (-> r result)
-	       ; "]\n     expected: [" (test-result-expected r)
-	       ; "]"
-	       ; (if (not (eq? (-> r exception)
-	       ;  	   #unspecified))
-	       ;     (format "~%     threw: [~a]~%"
-	       ;        (with-error-to-string
-	       ;  	 (lambda ()
-	       ;  	    (error-notify (-> r exception)))))
-	       ;     "\n"
          )))
 
-  
-   ;    results)
-   ; (let* ((succ-count (successful-count results))
-   ; 	 (count (length results))
-   ; 	 (fail-count (- count succ-count)))
-   ;    (printf "~%Tests: ~a Succeeded: ~a Failed: ~a~%" count succ-count
-   ; 	 fail-count)))
-     
-   
+         
 (define (display-suite-result result #!optional (show-success? #f))
-   (define (successful-count results)
-      (let loop ((lst results)
-		 (c 0))
-	 (if (pair? lst)
-	     (loop (cdr lst)
-		(if (test-result-success? (car lst))
-		    (+ c 1)
-		    c))
-	     c)))
    (let ((s::suite-result result))
-      (let* ((succ-count (successful-count (-> s test-results)))
-	     (count (length (-> s test-results)))
-	     (fail-count (- count succ-count)))
-	 (printf "~%~a~% Tests: ~a Succeeded: ~a Failed: ~a~%"
-	    (-> s suite description) count succ-count fail-count))))
+      (let* ((succ-count (successful-count s))
+	     (count (test-count s))
+             (fail-count (- count succ-count)))
+         (printf "~%~a~% Tests: ~a Succeeded: ~a Failed: ~a~%"
+            (-> s suite description) count succ-count fail-count))))
 
 
 (define-method (test-runner-execute tr::terminal-test-runner
 		  show-success?::bool)
-   (suite-run (-> tr suite)
-      (lambda (tr) (display-test-result tr show-success?))
-      (lambda (sr) (display-suite-result sr show-success?))))
+   (suite-result-successful? (suite-run (-> tr suite)
+                                (lambda (tr) (display-test-result tr show-success?))
+                                (lambda (sr) (display-suite-result sr show-success?)))))
       
 
 

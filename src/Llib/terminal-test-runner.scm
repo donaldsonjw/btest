@@ -24,8 +24,12 @@
 	   btest-btest)
    (export
       (class terminal-test-runner::test-runner
-	 (suite (default (test-root-suite))))))
+	 (suite (default (test-root-suite))))
+      (make-terminal-test-runner #!optional (suite (test-root-suite)))))
 
+
+(define (make-terminal-test-runner #!optional (suite (test-root-suite)))
+   (instantiate::terminal-test-runner (suite suite)))
 
 ;;;; terminal-test-runner implementation of test-runner protocol
 

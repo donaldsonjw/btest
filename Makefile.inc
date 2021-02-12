@@ -97,11 +97,20 @@ jvm: .jfile .afile .etags libj
 
 all: c jvm
 
+test: c recette/test$(LIBNAME) 
+	./recette/test$(LIBNAME)
+
+jtest: jvm .recettejfile recette/jtest$(LIBNAME) 
+	./recette/jtest$(LIBNAME)
+
 .afile: $(BIGLOOSRCS)
 	$(BGLAFILE) -o $@  $^
 
 .jfile: $(BIGLOOSRCS)
 	$(BGLJFILE) -pbase bigloo.$(LIBNAME) -o $@  -I src/Misc -I src/Llib $(_SRCSWOUTDIR)
+
+.recettejfile: recette/testbtest.scm
+	$(BGLJFILE) -pbase recette -o $@  -I recette  testbtest.scm
 
 .etags: $(BIGLOOSRCS)
 	$(BGLTAGS) -o $@ $^
@@ -176,6 +185,9 @@ lib_eu : $(OBJDIR) $(DISTDIR) $(EUNSAFEOBJECTS)
 recette/test$(LIBNAME) : recette/test$(LIBNAME).scm lib 
 	$(BIGLOO) -static-all-bigloo $(BUNSAFEFLAGS) -L $(DISTDIR) -o $@ $< 
 
+recette/jtest$(LIBNAME) : recette/test$(LIBNAME).scm libj 
+	$(BIGLOO) -jfile .recettejfile -jvm -static-all-bigloo $(BUNSAFEFLAGS) -L $(DISTDIR) -o $@ $< 
+
 
 $(OBJDIR):
 	mkdir $@
@@ -200,7 +212,7 @@ check-syntax: .afile
 
 
 
-install: all
+install: c
 	for file in $(DISTDIR)/*; do \
 	  $(INSTALL) $$file $(INSTBIGLOOLIBDIR)/`basename $$file`; \
 	done;
@@ -208,12 +220,21 @@ install: all
 clean:
 	rm -f -r $(OBJDIR);\
 	rm -f -r $(DISTDIR);\
+	rm -f -r $(SCLASSDIR);\
+	rm -f -r $(UCLASSDIR);\
+	rm -f -r $(ESCLASSDIR);\
+	rm -f -r $(EUCLASSDIR);\
 	rm -f .afile;\
 	rm -f .jfile;\
+	rm -r .recettejfile;\
 	rm -f $(LIBNAME).heap;\
 	rm -f $(LIBNAME).jheap;\
 	rm -f $(LIBNAME).init;\
-	rm -f recette/test$(LIBNAME)
+	rm -f recette/test$(LIBNAME);\
+	rm -r recette/jtest$(LIBNAME);\
+	rm -r recette/*.o;\
+	rm -r recette/*.class
+
 
 
 

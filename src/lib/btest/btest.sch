@@ -1,4 +1,4 @@
-;;;; Copyright(c) 2013 Joseph Donaldson(donaldsonjw@yahoo.com) 
+;;;; Copyright(c) 2013, 2024 Joseph Donaldson(donaldsonjw@yahoo.com) 
 ;;;; This file is part of btest.
 ;;;;
 ;;;;     btest is free software: you can redistribute it and/or modify
@@ -70,7 +70,7 @@
 (define-macro (test desc . exps)
    `(test-add! :suite *current-test-suite* :test
        (instantiate::simple-test (description ,desc)
-                                 (expression (lambda () (begin ,@exps))))))
+                                 (expression (lambda () (begin ,@exps ))))))
 
 (define-expander define-test-suite
    (lambda (x e)
@@ -90,10 +90,3 @@
                     ,@(e exp e) *current-test-suite*)) e))
          (else
 	  (error "define-test-suite" "invalid form" x)))))
-
-
-(declare-library! 'btest 
-   :version "0.1"
-   :srfi '(btest)
-   :basename "btest"
-   :module-eval 'btest_make_lib)

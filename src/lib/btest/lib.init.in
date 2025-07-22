@@ -1,0 +1,13 @@
+#|
+btest
+
+Copyright 2025,  Joseph Donaldson (donaldsonjw@yahoo.com)
+
+|#
+
+(declare-library! 'btest 
+   :version "@VERSION@"
+   :srfi '(btest)
+   :basename "btest"
+   :module-eval 'btest_make_lib)
+

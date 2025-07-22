@@ -46,8 +46,8 @@
                         (instantiate::test-failure
                            (test test)
                            (reason (format "unexpected exception: ~a" e)))))
-                 (let ((res (test-execute test)))
-                    (instantiate::test-success (test test)))))
+                 (test-execute test)
+                 (instantiate::test-success (test test))))
 
 (define-method (test-description test::simple-test)
    (-> test description))

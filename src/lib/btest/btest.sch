@@ -52,7 +52,7 @@
    `(assert-predicate = ,exp ,val))
 
 (define-macro (assert-true exp)
-   `(assert-predicate eq? ,exp #t))
+   `(assert-predicate (lambda (v x) (if v #t)) ,exp #t))
 
 (define-macro (assert-false exp)
    `(assert-predicate eq? ,exp #f))

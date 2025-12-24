@@ -26,6 +26,7 @@
       (generic suite-add-test! suite::suite test::test)
       (generic suite-add-subsuite! suite::suite subsuite::suite)
       (generic suite-run suite::suite
+         suite-begin-handler::procedure
 	 test-result-handler::procedure
 	 suite-result-handler::procedure)))
 
@@ -42,8 +43,10 @@
 
 
 (define-generic (suite-run suite::suite
+                   suite-begin-handler::procedure
 		   test-result-handler::procedure
 		   suite-result-handler::procedure)
+   (suite-begin-handler suite)
    (let ((test-results (map (lambda (t)
 			       (let ((res (test-run t)))
 				     (test-result-handler res)
@@ -51,6 +54,7 @@
 			  (reverse (-> suite tests))))
 	 (suite-results (map (lambda (s)
 				(let ((res (suite-run s
+                                              suite-begin-handler
 					      test-result-handler
 					      suite-result-handler)))
 				   res))

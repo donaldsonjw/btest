@@ -33,30 +33,40 @@
 
 ;;;; terminal-test-runner implementation of test-runner protocol
 
+(define (green-success str)
+   (format "\033[32m~a\033[0m" str))
+
+(define (red-failure str)
+   (format "\033[31m~a\033[0m" str))
+
+
 (define (display-test-result result #!optional (show-success? #f))
   (let ((r::test-result result))
      (if (test-result-success? r)
          (when show-success?
-            (print (test-description (-> r test)) "... ok."))
+            (print (test-description (-> r test)) "..." (green-success "ok.")))
          (let ((failure::test-failure r))
             (display* (test-description (-> r test)) "...")
-            (print "error.")
+            (print (red-failure "error."))
             (print " ==> " (-> failure reason))) 
          )))
 
+(define (display-begin-suite suite::suite)
+   (printf "Begin Test Suite: ~a~%~%" (-> suite description)))
          
 (define (display-suite-result result #!optional (show-success? #f))
    (let ((s::suite-result result))
       (let* ((succ-count (successful-count s))
 	     (count (test-count s))
              (fail-count (- count succ-count)))
-         (printf "~%~a~% Tests: ~a Succeeded: ~a Failed: ~a~%"
+         (printf "~%End Test Suite: ~a~% Tests: ~a Succeeded: ~a Failed: ~a~%~%"
             (-> s suite description) count succ-count fail-count))))
 
 
 (define-method (test-runner-execute tr::terminal-test-runner
 		  show-success?::bool)
    (suite-result-successful? (suite-run (-> tr suite)
+                                display-begin-suite
                                 (lambda (tr) (display-test-result tr show-success?))
                                 (lambda (sr) (display-suite-result sr show-success?)))))
       
